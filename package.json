@@ -4,7 +4,7 @@
   "description": "A small CPS-style utility library for node.js",
   "version": "0.1.0",
   "repository": {
-    "url": ""
+    "url": "git://github.com/nlehuen/capisce.git"
   },
   "main": "lib/capisce.js",
   "engines": {
