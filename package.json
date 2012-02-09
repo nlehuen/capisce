@@ -1,0 +1,16 @@
+{
+  "author": "Nicolas Lehuen <nicolas@lehuen.com>",
+  "name": "capisce",
+  "description": "A small CPS-style utility library for node.js",
+  "version": "0.1.0",
+  "repository": {
+    "url": ""
+  },
+  "main": "lib/capisce.js",
+  "engines": {
+    "node": "~0.6"
+  },
+  "dependencies": {},
+  "devDependencies": {},
+  "optionalDependencies": {}
+}
