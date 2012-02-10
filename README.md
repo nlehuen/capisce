@@ -103,7 +103,7 @@ queue.perform(function(over) {
 });
 ```
 
-Of course the above example would be useless with some concurrency in the queue. If you want concurrency, you can pass a job parameter to wat :
+Of course the above example would be useless with some concurrency in the queue. If you want concurrency, you can pass a job parameter to wait :
 
 ```javascript
 var queue = new WorkingQueue(16);
