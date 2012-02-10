@@ -16,7 +16,10 @@ function test1() {
             var id = count++;
             var duration = Math.random()*100;
             console.log("Starting "+id+"... ");
-            setTimeout(function() { console.log("... over "+id+", duration="+duration+"ms"); over(null, "result-"+id);}, duration);
+            setTimeout(function() {
+                console.log("... over "+id+", duration="+duration+"ms");
+                over(null, "result-"+id);
+            }, duration);
         });
     }
 }

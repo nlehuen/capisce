@@ -83,7 +83,7 @@ function myJob(name) {
 		console.log("Starting "+name+" for "+duration+"ms");
 		setTimeout(function() {
 			console.log(name + " over, duration="+duration+"ms");
-			over("result-"+name);
+			over(null, "result-"+name);
 		}, duration);
 	}	
 }
@@ -106,7 +106,7 @@ queue.whenDone(function(results) {
 });
 ```
 
-Higher order constructs : sequence, parallel, and then
+Higher order constructs : sequence, concurrently, and then
 ------------------------------------------------------
 
-capisce exports the sequence and parallel function, as well as the then method in order to hide WorkingQueue and provide a small DSL for asynchronous workflows. See tests/test2.js until I write some proper doc for this.
+capisce exports the sequence and concurrently function, as well as the then method in order to provide a small DSL for asynchronous workflows, without exposing the gory details of WorkingQueue. See tests/test2.js until I write some proper doc for this.
