@@ -8,12 +8,16 @@ The basic use case of this module is when you want to perform a bunch (hundreds 
 The WorkingQueue class
 ----------------------
 
+### Creating a queue
+
 This class is instanciated with a single parameter : the concurrency level of the queue. Again, if the concurrency level is 1, then it means that all jobs will be processed sequentially.
 
 ```javascript
 var WorkingQueue = require('capisce').WorkingQueue;
 var queue = new WorkingQueue(16);
 ```
+
+### Launching jobs
 
 You can then launch jobs using the perform method. If the current concurrency limit has not been reached, then the job will be scheduled immediatly. Otherwise, it is queued for later execution.
 
@@ -44,6 +48,8 @@ queue.perform(function(over) {
 });
 ```
 
+### Waiting for all jobs to be over
+
 When queuing a bunch of jobs, it is often required to wait for all jobs to complete before continuing a process. For that you use the whenDone method :
 
 ```javascript
@@ -69,6 +75,8 @@ queue.whenDone(function() {
 
 The whenDone method can be called multiple times to register multiple handlers, and the handlers will be called in the same order they were added. Maybe I should have used the EventEmitter pattern for this.
 
+### Holding and resuming jobs execution
+
 Since capisce 0.2.0, if you want to fill in the queue first, then launch jobs later, you can use the hold and go methods :
 
 ```javascript
@@ -78,6 +86,37 @@ for(i=0;i<1000;i++) {
 }
 queue.go(); // Resume queue processing
 ```
+
+### Scheduling jobs for later
+
+Since capisce 0.3.0, you can use the wait method as a convenient way to include delays into job execution.
+
+```javascript
+var queue = new WorkingQueue(1); // Basically, a sequence
+
+queue.perform(function(over) {
+    console.log("Waiting 5 seconds...");
+    over();
+}).wait(5000).perform(function(over) {
+    console.log("done !");
+    over();
+});
+```
+
+Of course the above example would be useless with some concurrency in the queue. If you want concurrency, you can pass a job parameter to wat :
+
+```javascript
+var queue = new WorkingQueue(16);
+
+queue.perform(function(over) {
+    console.log("First job done");
+    over();
+}).wait(5000, function(over) {
+    console.log("Second job started after 5 seconds");
+    over();
+});
+```
+
 
 The CollectingWorkingQueue class
 --------------------------------
@@ -119,4 +158,4 @@ queue.whenDone(function(results) {
 Higher order constructs : sequence, concurrently, and then
 ------------------------------------------------------
 
-capisce exports the sequence and concurrently function, as well as the then method in order to provide a small DSL for asynchronous workflows, without exposing the gory details of WorkingQueue. See tests/test2.js until I write some proper doc for this.
+capisce exports the sequence and concurrently function, as well as the then method in order to provide a small DSL for asynchronous workflows, without exposing the gory details of WorkingQueue. See test/test2.js and test/test3.js until I write some proper doc for this.
