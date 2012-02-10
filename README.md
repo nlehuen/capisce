@@ -21,8 +21,8 @@ Jobs are simple function that are passed a very important parameter : the over f
 
 ```javascript
 queue.perform(function(over) {
-	console.log("Hello, world !");
-	over();
+    console.log("Hello, world !");
+    over();
 });
 ```
 
@@ -30,44 +30,54 @@ The over function can be passed around inside your job. In fact it's the only wa
 
 ```javascript
 var fs = require('fs');
-queue.perform(function(over)) {
-	console.log("Reading file...");
-	fs.readFile('README.md', function(err, result)) {
-		console.log("Over !");
-		if(err) {
-			console.error(err);
-		} else {
-			stdout.write(result);
-		}
-		over();
-	}
-}
+queue.perform(function(over) {
+    console.log("Reading file...");
+    fs.readFile('README.md', function(err, result) {
+        console.log("Over !");
+        if(err) {
+            console.error(err);
+        } else {
+            stdout.write(result);
+        }
+        over();
+    });
+});
 ```
 
 When queuing a bunch of jobs, it is often required to wait for all jobs to complete before continuing a process. For that you use the whenDone method :
 
 ```javascript
 function myJob(name) {
-	return function (over) {
-		var duration = Math.floor(Math.random() * 1000);
-		console.log("Starting "+name+" for "+duration+"ms");
-		setTimeout(function() {
-			console.log(name + " over, duration="+duration+"ms");
-			over();
-		}, duration);
-	}	
+    return function (over) {
+        var duration = Math.floor(Math.random() * 1000);
+        console.log("Starting "+name+" for "+duration+"ms");
+        setTimeout(function() {
+            console.log(name + " over, duration="+duration+"ms");
+            over();
+        }, duration);
+    };    
 }
 
 var i;
 for(i=0;i<1000;i++) {
-	queue.perform(myJob("job-"+i));
+    queue.perform(myJob("job-"+i));
 }
 queue.whenDone(function() {
-	console.log("All done !");
+    console.log("All done !");
 });
 ```
 
 The whenDone method can be called multiple times to register multiple handlers, and the handlers will be called in the same order they were added. Maybe I should have used the EventEmitter pattern for this.
+
+Since capisce 0.2.0, if you want to fill in the queue first, then launch jobs later, you can use the hold and go methods :
+
+```javascript
+queue.hold(); // Hold queue processing
+for(i=0;i<1000;i++) {
+    queue.perform(myJob("job-"+i));
+}
+queue.go(); // Resume queue processing
+```
 
 The CollectingWorkingQueue class
 --------------------------------
@@ -78,31 +88,31 @@ This is just a wrapper around WorkingQueue that do the very common task of colle
 var queue2 = new CollectingWorkingQueue(16);
 
 function myJob(name) {
-	return function (over) {
-		var duration = Math.floor(Math.random() * 1000);
-		console.log("Starting "+name+" for "+duration+"ms");
-		setTimeout(function() {
-			console.log(name + " over, duration="+duration+"ms");
-			over(null, "result-"+name);
-		}, duration);
-	}	
+    return function (over) {
+        var duration = Math.floor(Math.random() * 1000);
+        console.log("Starting "+name+" for "+duration+"ms");
+        setTimeout(function() {
+            console.log(name + " over, duration="+duration+"ms");
+            over(null, "result-"+name);
+        }, duration);
+    }    
 }
 
 var i;
 for(i=0;i<1000;i++) {
-	queue.perform(myJob("job-"+i));
+    queue.perform(myJob("job-"+i));
 }
 queue.whenDone(function(results) {
-	console.log("All done !");
-	
-	console.log("Before sorting : ")
-	console.log(results[0]);
-	console.log(results[999]);
-	
-	results.sort()
-	console.log("After sorting : ")
-	console.log(results[0]);
-	console.log(results[999]);
+    console.log("All done !");
+    
+    console.log("Before sorting : ")
+    console.log(results[0]);
+    console.log(results[999]);
+    
+    results.sort()
+    console.log("After sorting : ")
+    console.log(results[0]);
+    console.log(results[999]);
 });
 ```
 
