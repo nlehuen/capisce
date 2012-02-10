@@ -3,12 +3,15 @@
   "name": "capisce",
   "description": "A small CPS-style utility library for node.js",
   "version": "0.1.0",
+  "homepage": "https://github.com/nlehuen/capisce",
+  "bugs": "https://github.com/nlehuen/capisce/issues",
   "repository": {
+    "type": "git",
     "url": "git://github.com/nlehuen/capisce.git"
   },
   "main": "lib/capisce.js",
   "engines": {
-    "node": "~0.6"
+    "node": ""
   },
   "dependencies": {},
   "devDependencies": {},
