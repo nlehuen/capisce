@@ -1,3 +1,5 @@
+"use strict";
+
 var capisce = require('../lib/capisce.js');
 
 function test1() {

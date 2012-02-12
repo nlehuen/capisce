@@ -1,3 +1,5 @@
+"use strict";
+
 var capisce = require('../lib/capisce.js');
 
 function test2() {
@@ -26,7 +28,7 @@ function test2() {
                 console.log("Starting final job "+c);
                 setTimeout(function() {
                     var text = res1+", "+res2+":"+c;
-                    res3.push(text)
+                    res3.push(text);
                     console.log(text);
                     over();
                 }, Math.random()*2000);
