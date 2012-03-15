@@ -2,7 +2,7 @@
   "author": "Nicolas Lehuen <nicolas@lehuen.com>",
   "name": "capisce",
   "description": "A small CPS-style utility library for node.js",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "homepage": "https://github.com/nlehuen/capisce",
   "bugs": "https://github.com/nlehuen/capisce/issues",
   "keywords": ["queue", "sequence", "concurrent", "parallel"],

@@ -21,7 +21,7 @@ var queue = new WorkingQueue(16);
 
 You can then launch jobs using the perform method. If the current concurrency limit has not been reached, then the job will be scheduled immediatly. Otherwise, it is queued for later execution.
 
-Jobs are simple function that are passed a very important parameter : the over function. The job MUST call the over function at the end of its process to signal the WorkingQueue that it is, well, over.
+Jobs are simple functions that are passed a very important parameter : the over function. The job MUST call the over function at the end of its process to signal the WorkingQueue that it is, well, over.
 
 ```javascript
 queue.perform(function(over) {
@@ -48,25 +48,44 @@ queue.perform(function(over) {
 });
 ```
 
+Of course you can name the over function any way you want. Other similar libraries like to call it done.
+
+### Passing parameters to jobs
+
+Before 0.4.0, jobs where function that could only take one parameter, the over function. This forced any job parameters to be passed through the closure mechanism, which may have undesirable memory or performance downsides.
+
+From 0.4.0, you can pass additional arguments to the perform call and they will be passed right along to your job, before the over function. Internally the data stored in the queue is [job, arg1, arg2...] so no surprises regarding memory usage.
+
+Here is a sample of parameter passing :
+
+```javascript
+// Note how the over function is passed as the last parameter
+function myJob(word1, word2, over) {
+    console.log('' + word1 + ', ' + word2 + ' !');
+    over();
+}
+
+queue.perform(myJob, 'Hello', 'world');
+queue.perform(myJob, 'Howdy', 'pardner');
+```
+
 ### Waiting for all jobs to be over
 
 When queuing a bunch of jobs, it is often required to wait for all jobs to complete before continuing a process. For that you use the whenDone method :
 
 ```javascript
-function myJob(name) {
-    return function (over) {
-        var duration = Math.floor(Math.random() * 1000);
-        console.log("Starting "+name+" for "+duration+"ms");
-        setTimeout(function() {
-            console.log(name + " over, duration="+duration+"ms");
-            over();
-        }, duration);
-    };    
+function myJob(name, over) {
+    var duration = Math.floor(Math.random() * 1000);
+    console.log("Starting "+name+" for "+duration+"ms");
+    setTimeout(function() {
+        console.log(name + " over, duration="+duration+"ms");
+        over();
+    }, duration);
 }
 
 var i;
 for(i=0;i<1000;i++) {
-    queue.perform(myJob("job-"+i));
+    queue.perform(myJob, "job-"+i);
 }
 queue.whenDone(function() {
     console.log("All done !");
@@ -82,7 +101,7 @@ Since capisce 0.2.0, if you want to fill in the queue first, then launch jobs la
 ```javascript
 queue.hold(); // Hold queue processing
 for(i=0;i<1000;i++) {
-    queue.perform(myJob("job-"+i));
+    queue.perform(myJob, "job-"+i);
 }
 queue.go(); // Resume queue processing
 ```
@@ -127,19 +146,17 @@ This is just a wrapper around WorkingQueue that do the very common task of colle
 var queue2 = new CollectingWorkingQueue(16);
 
 function myJob(name) {
-    return function (over) {
-        var duration = Math.floor(Math.random() * 1000);
-        console.log("Starting "+name+" for "+duration+"ms");
-        setTimeout(function() {
-            console.log(name + " over, duration="+duration+"ms");
-            over(null, "result-"+name);
-        }, duration);
-    }    
+    var duration = Math.floor(Math.random() * 1000);
+    console.log("Starting "+name+" for "+duration+"ms");
+    setTimeout(function() {
+        console.log(name + " over, duration="+duration+"ms");
+        over(null, "result-"+name);
+    }, duration);
 }
 
 var i;
 for(i=0;i<1000;i++) {
-    queue.perform(myJob("job-"+i));
+    queue.perform(myJob, "job-"+i);
 }
 queue.whenDone(function(results) {
     console.log("All done !");
