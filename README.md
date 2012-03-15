@@ -94,6 +94,40 @@ queue.whenDone(function() {
 
 The whenDone method can be called multiple times to register multiple handlers, and the handlers will be called in the same order they were added. Maybe I should have used the EventEmitter pattern for this.
 
+From 0.4.1 the situation when whenDone() callbacks are called is more precise.
+
+The whenDone callbacks will be called :
+- when the last job from the queue is over
+- when you call doneAddingJobs() and no job was performed since the last whenDone situation
+
+This is required to handle the case when a queue may or may not receive jobs, and you want cleanup callbacks to be called in both situations. In this case you would do :
+
+```javascript
+function myJob(name, over) {
+    var duration = Math.floor(Math.random() * 1000);
+    console.log("Starting "+name+" for "+duration+"ms");
+    setTimeout(function() {
+        console.log(name + " over, duration="+duration+"ms");
+        over();
+    }, duration);
+}
+
+var i;
+// In some cases you can have no queued jobs
+for(i=0;i<Math.random(10);i++) {
+    queue.perform(myJob, "job-"+i);
+}
+queue.whenDone(function() {
+    console.log("All done with "+i+" jobs !");
+});
+
+// This does nothing if jobs where added to the queue
+// If no jobs where added, the whenDone callbacks are called
+queue.doneAddingJobs();
+```
+
+Calling doneAddingJobs() is not mandatory : it's just needed if you want to make sure the whenDone callbacks are called even if no job was effectively done.
+
 ### Holding and resuming jobs execution
 
 Since capisce 0.2.0, if you want to fill in the queue first, then launch jobs later, you can use the hold and go methods :

@@ -4,6 +4,7 @@ var capisce = require('../lib/capisce.js');
 
 function test1() {
     var q = new capisce.CollectingWorkingQueue(16);
+    
     q.whenDone(function(result) {
         console.log("Done !");
         console.log("result.length="+result.length);
@@ -24,6 +25,8 @@ function test1() {
             }, duration);
         });
     }
+
+    q.doneAddingJobs();
 }
 
 test1();
