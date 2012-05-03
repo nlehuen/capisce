@@ -1,16 +1,16 @@
 capisce
 =======
 
-This module implements an asynchronous job queueing system with the WorkingQueue class. Jobs are processed concurrently up to a given degree of "concurrency" ; of course, if this degree is 1, then jobs are processed sequentially.
+This module implements an asynchronous job queueing system with the `WorkingQueue` class. Jobs are processed concurrently up to a given degree of "concurrency" ; of course, if this degree is 1, then jobs are processed sequentially.
 
-The basic use case of this module is when you want to perform a bunch (hundreds or thousands) of I/O related tasks, for instance HTTP requests. In order to play nice with others and make sure the I/O stack (file descriptors, TCP/IP stack etc.) won't be submerged by thousands of concurrent requests, you have to put an artificial limit on the requests that are launched concurrently. When this limit is reached, jobs have to be queued until some other job is finished. And that's exactly what WorkingQueue is for !
+The basic use case of this module is when you want to perform a bunch (hundreds or thousands) of I/O related tasks, for instance HTTP requests. In order to play nice with others and make sure the I/O stack (file descriptors, TCP/IP stack etc.) won't be submerged by thousands of concurrent requests, you have to put an artificial limit on the requests that are launched concurrently. When this limit is reached, jobs have to be queued until some other job is finished. And that's exactly what `WorkingQueue` is for !
 
 The WorkingQueue class
 ----------------------
 
 ### Creating a queue
 
-This class is instanciated with a single parameter : the concurrency level of the queue. Again, if the concurrency level is 1, then it means that all jobs will be processed sequentially.
+This class is instanciated with a single parameter : the `concurrency` level of the queue. Again, if the concurrency level is 1, then it means that all jobs will be processed sequentially.
 
 ```javascript
 var WorkingQueue = require('capisce').WorkingQueue;
@@ -19,9 +19,9 @@ var queue = new WorkingQueue(16);
 
 ### Launching jobs
 
-You can then launch jobs using the perform method. If the current concurrency limit has not been reached, then the job will be scheduled immediatly. Otherwise, it is queued for later execution.
+You can then launch jobs using the `perform()` method. If the current concurrency limit has not been reached, then the job will be scheduled immediatly. Otherwise, it is queued for later execution.
 
-Jobs are simple functions that are passed a very important parameter : the over function. The job MUST call the over function at the end of its process to signal the WorkingQueue that it is, well, over.
+Jobs are simple functions that are passed a very important parameter : the `over()` function. The job MUST call the over function at the end of its process to signal the `WorkingQueue` that it is, well, over.
 
 ```javascript
 queue.perform(function(over) {
@@ -30,7 +30,7 @@ queue.perform(function(over) {
 });
 ```
 
-The over function can be passed around inside your job. In fact it's the only way to perform interesting things : since I/O are asynchronous, you have to call over once the I/O request is over, that is to say in an event handler or completion callback.
+The `over()` function can be passed around inside your job. In fact it's the only way to perform interesting things : since I/O are asynchronous, you have to call over once the I/O request is over, that is to say in an event handler or completion callback.
 
 ```javascript
 var fs = require('fs');
@@ -52,9 +52,9 @@ Of course you can name the over function any way you want. Other similar librari
 
 ### Passing parameters to jobs
 
-Before 0.4.0, jobs where function that could only take one parameter, the over function. This forced any job parameters to be passed through the closure mechanism, which may have undesirable memory or performance downsides.
+Before 0.4.0, jobs where function that could only take one parameter, the `over()` function. This forced any job parameters to be passed through the closure mechanism, which may have undesirable memory or performance downsides.
 
-From 0.4.0, you can pass additional arguments to the perform call and they will be passed right along to your job, before the over function. Internally the data stored in the queue is [job, arg1, arg2...] so no surprises regarding memory usage.
+From 0.4.0, you can pass additional arguments to the `perform()` call and they will be passed right along to your job, before the over function. Internally the data stored in the queue is `[job, arg1, arg2...]` so no surprises regarding memory usage.
 
 Here is a sample of parameter passing :
 
@@ -71,7 +71,7 @@ queue.perform(myJob, 'Howdy', 'pardner');
 
 ### Waiting for all jobs to be over
 
-When queuing a bunch of jobs, it is often required to wait for all jobs to complete before continuing a process. For that you use the whenDone method :
+When queuing a bunch of jobs, it is often required to wait for all jobs to complete before continuing a process. For that you use the `whenDone()` method :
 
 ```javascript
 function myJob(name, over) {
@@ -92,13 +92,13 @@ queue.whenDone(function() {
 });
 ```
 
-The whenDone method can be called multiple times to register multiple handlers, and the handlers will be called in the same order they were added. Maybe I should have used the EventEmitter pattern for this.
+The `whenDone()` method can be called multiple times to register multiple handlers, and the handlers will be called in the same order they were added. Maybe I should have used the `EventEmitter` pattern for this.
 
-From 0.4.1 the situation when whenDone() callbacks are called is more precise.
+From 0.4.1 the situation when `whenDone` callbacks are called is more precise.
 
-The whenDone callbacks will be called :
+The `whenDone` callbacks will be called :
 - when the last job from the queue is over
-- when you call doneAddingJobs() and no job was performed since the last whenDone situation
+- when you call `doneAddingJobs()` and no job was performed since the last `whenDone` situation
 
 This is required to handle the case when a queue may or may not receive jobs, and you want cleanup callbacks to be called in both situations. In this case you would do :
 
@@ -126,7 +126,7 @@ queue.whenDone(function() {
 queue.doneAddingJobs();
 ```
 
-Calling doneAddingJobs() is not mandatory : it's just needed if you want to make sure the whenDone callbacks are called even if no job was effectively done.
+Calling `doneAddingJobs()` is not mandatory : it's just needed if you want to make sure the `whenDone` callbacks are called even if no job was effectively done.
 
 ### Holding and resuming jobs execution
 
@@ -142,7 +142,7 @@ queue.go(); // Resume queue processing
 
 ### Scheduling jobs for later
 
-Since capisce 0.3.0, you can use the wait method as a convenient way to include delays into job execution.
+Since capisce 0.3.0, you can use the `wait()` method as a convenient way to include delays into job execution.
 
 ```javascript
 var queue = new WorkingQueue(1); // Basically, a sequence
@@ -156,7 +156,7 @@ queue.perform(function(over) {
 });
 ```
 
-Of course the above example would be useless with some concurrency in the queue. If you want concurrency, you can pass a job parameter to wait :
+Of course the above example would be useless with some concurrency in the queue. If you want concurrency, you can pass a job parameter to `wait()` :
 
 ```javascript
 var queue = new WorkingQueue(16);
@@ -174,7 +174,7 @@ queue.perform(function(over) {
 The CollectingWorkingQueue class
 --------------------------------
 
-This is just a wrapper around WorkingQueue that do the very common task of collecting result of each job. When using CollectingWorkingQueue, the over function takes the err, result of the job as parameters, and the wellDone handler receive the array of job results (as [jobId, err, result] sub-arrays). It is your choice to sort this array if you want to have results in the same orders the jobs where submitted.
+This is just a wrapper around `WorkingQueue` that do the very common task of collecting result of each job. When using `CollectingWorkingQueue`, the over function takes the `err, result` of the job as parameters, and the `wellDone` handler receive the array of job results (as `[jobId, err, result]` sub-arrays). It is your choice to sort this array if you want to have results in the same orders the jobs where submitted.
 
 ```javascript
 var queue2 = new CollectingWorkingQueue(16);
@@ -194,11 +194,11 @@ for(i=0;i<1000;i++) {
 }
 queue.whenDone(function(results) {
     console.log("All done !");
-    
+
     console.log("Before sorting : ")
     console.log(results[0]);
     console.log(results[999]);
-    
+
     results.sort()
     console.log("After sorting : ")
     console.log(results[0]);
@@ -207,6 +207,18 @@ queue.whenDone(function(results) {
 ```
 
 Higher order constructs : sequence, concurrently, and then
-------------------------------------------------------
+----------------------------------------------------------
 
-capisce exports the sequence and concurrently function, as well as the then method in order to provide a small DSL for asynchronous workflows, without exposing the gory details of WorkingQueue. See test/test2.js and test/test3.js until I write some proper doc for this.
+capisce exports the sequence and concurrently function, as well as the then method in order to provide a small DSL for asynchronous workflows, without exposing the gory details of `WorkingQueue`. See `test/test2.js` and `test/test3.js` until I write some proper doc for this.
+
+Change Log
+----------
+
+* 0.4.3 (2012-05-03) : with the help of @penartur, fixed a problem where a single worker was launched after a `hold()` / `go()` sequence.
+* 0.4.2 (2012-03-16) : fixed a problem with `whenDone()`.
+* 0.4.1 (2012-03-15) : clarified behavior of `whenDone()` and added `doneAddingJobs()`
+* 0.4.0 (2012-02-15) : `perform()` now accepts extra parameters that are passed to the job when it is scheduled.
+* 0.3.1 (2012-02-12) : new behavior for `whenDone()`, not so satisfying.
+* 0.3.0 (2012-02-10) : Added the `wait()` method.
+* 0.2.0 (2012-02-10) : Added `hold()` and `go()` methods.
+* 0.1.0 (2012-02-09) : Initial version.
