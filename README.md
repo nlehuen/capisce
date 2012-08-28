@@ -48,7 +48,7 @@ queue.perform(function(over) {
 });
 ```
 
-Of course you can name the over function any way you want. Other similar libraries like to call it done.
+Of course you can name the over function any way you want. Other similar libraries like to call it `done`.
 
 ### Passing parameters to jobs
 

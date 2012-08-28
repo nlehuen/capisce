@@ -15,6 +15,11 @@
     "node": ""
   },
   "dependencies": {},
-  "devDependencies": {},
+  "devDependencies": {
+      "mocha": ""
+  },
+  "scripts": {
+    "test": "mocha -R list -s 1000 -t 5000"
+  },
   "optionalDependencies": {}
 }
