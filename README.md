@@ -214,6 +214,7 @@ capisce exports the sequence and concurrently function, as well as the then meth
 Change Log
 ----------
 
+* 0.4.4 (2012-08-28) : wrote proper unit tests using mocha (`npm test` to launch them).
 * 0.4.3 (2012-05-03) : with the help of @penartur, fixed a problem where a single worker was launched after a `hold()` / `go()` sequence.
 * 0.4.2 (2012-03-16) : fixed a problem with `whenDone()`.
 * 0.4.1 (2012-03-15) : clarified behavior of `whenDone()` and added `doneAddingJobs()`
