@@ -6,7 +6,7 @@ var assert = require("assert");
 var LAPSE = 50;
 
 describe('WorkingQueue', function(){
-    it('should perform jobs passed without parameters', function(done){
+    it('performs jobs passed without parameters', function(done){
 
         var queue = new capisce.WorkingQueue(1);
         var result = 0;
@@ -24,7 +24,7 @@ describe('WorkingQueue', function(){
         });
     });
 
-    it('should perform jobs passed with parameters', function(done){
+    it('performs jobs passed with parameters', function(done){
 
         var queue = new capisce.WorkingQueue(1);
         var result = 0;
@@ -42,7 +42,7 @@ describe('WorkingQueue', function(){
         });
     });
 
-  it('should trigger whenDone when doneSendingJobs is called', function(done) {
+  it('triggers whenDone when doneAddingJobs is called', function(done) {
         
         var queue = new capisce.WorkingQueue(1);
         var waited = 0;
@@ -58,7 +58,7 @@ describe('WorkingQueue', function(){
         }, LAPSE);
   });
 
-  it('should not trigger whenDone twice when doneSendingJobs is called after adding a job', function(done) {
+  it('does not trigger whenDone twice when doneAddingJobs is called after adding a job', function(done) {
         
         var queue = new capisce.WorkingQueue(1);
         var waited = 0;
@@ -81,7 +81,7 @@ describe('WorkingQueue', function(){
         }, LAPSE);
   });
 
-  it('should hold processing when asked to', function(done) {
+  it('holds when asked to', function(done) {
 
         var queue = new capisce.WorkingQueue(1);
         var result = 0;
@@ -112,7 +112,7 @@ describe('WorkingQueue', function(){
         });
   });
 
-  it('should process jobs in sequence when concurrency==1', function(done) {
+  it('runs jobs in sequence when concurrency==1', function(done) {
 
         var start = new Date().getTime();
         var result = 0;
@@ -139,7 +139,7 @@ describe('WorkingQueue', function(){
 
   });
 
-  it('should process jobs in parallel when concurrency>1', function(done) {
+  it('runs jobs in parallel when concurrency>1', function(done) {
 
         var start = new Date().getTime();
         var result = 0;
@@ -166,12 +166,81 @@ describe('WorkingQueue', function(){
         });
 
   });
-});
 
+  it('can be built with sequence()', function(done) {
+        var result = 0;
+
+        capisce.sequence().perform(function(over) {
+            result += 2;
+            over();
+            assert.equal(2, result);
+        }).then(function(over) {
+            result += 3;
+            over();
+            assert.equal(5, result);
+        }).whenDone(function() {
+            assert.equal(5, result);
+            done();
+        });
+  });
+
+  it('can be built with sequence(), using the shortcut notation', function(done) {
+        var result = 0;
+
+        capisce.sequence(function(over) {
+            result += 2;
+            over();
+            assert.equal(2, result);
+        }).then(function(over) {
+            result += 3;
+            over();
+            assert.equal(5, result);
+        }).whenDone(function() {
+            assert.equal(5, result);
+            done();
+        });
+  });
+
+  it('can be built with sequence(), using the shortcut notation and job parameters', function(done) {
+        var result = 0;
+
+        capisce.sequence(function(i, over) {
+            result += i;
+            over();
+            assert.equal(i, result);
+        }, 5).then(function(over) {
+            setTimeout(function() {
+                result += 3;
+                over();
+                assert.equal(8, result);
+            }, LAPSE);
+        }).whenDone(function() {
+            assert.equal(8, result);
+            done();
+        });
+  });
+
+  it('supports enqueuing jobs with other.then', function(done) {
+        var result = 0;
+
+        capisce.sequence().perform(function(over) {
+            result += 2;
+            over.then(function(over) {
+                result += 3;
+                over();
+            });
+            assert.equal(2, result);
+        }).whenDone(function() {
+            assert.equal(5, result);
+            done();
+        });
+  });
+
+});
 
 describe('ConcurrentWorkingQueue', function(){
     
-    it('should collect results', function(done) {
+    it('collects results', function(done) {
         var queue = new capisce.CollectingWorkingQueue(2);
         var repeat = 10;
 
@@ -197,7 +266,7 @@ describe('ConcurrentWorkingQueue', function(){
 
     });
 
-    it('should collect results when passed parameters', function(done) {
+    it('collects results when passed parameters', function(done) {
         var queue = new capisce.CollectingWorkingQueue(2);
         var repeat = 10;
 

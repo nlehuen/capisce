@@ -242,15 +242,37 @@ queue.whenDone(function(results) {
 
 Also since capisce 0.4.5, you can call `CollectingWorkingQueue.hold()` and `CollectingWorkingQueue.go()` just like with `WorkingQueue`.
 
-Higher order constructs : sequence, concurrently, and then
+Higher order constructs : sequence and then
 ----------------------------------------------------------
 
-capisce exports the sequence and concurrently function, as well as the then method in order to provide a small DSL for asynchronous workflows, without exposing the gory details of `WorkingQueue`. See `test/test2.js` and `test/test3.js` until I write some proper doc for this.
+`capisce.sequence()` can be used as a shorcut :
+
+```javascript
+// Those three block codes are equivalent :
+
+// Basic version
+var queue = new capisce.WorkingQueue(1);
+queue.perform(job1);
+queue.perform(job2);
+queue.perform(job3);
+
+// Using capisce.sequence() :
+capisce.sequence().perform(job1).then(job2).then(job3);
+
+// capisce.sequence() accepts a job as parameter :
+capisce.sequence(job1).then(job2).then(job3);
+
+// capisce.sequence() also accepts job parameters.
+// By the way, perform is good to use, too
+capisce.sequence(job1, param1).then(job2).perform(job3, param2);
+```
+
+For now, `then()` doesn't accept job parameters like `perform()`. This is due to a feature that I'd rather remove in the near future, that allows `then()` to create concurrent blocks within a sequence.
 
 Change Log
 ----------
-
-* 0.4.5 (2012-08-28) : `CollectingWorkingQueue.perform()` now accepts parameters for the job, just like `WorkingQueue.perform()`. Added `WorkingQueue.hold()` and `WorkingQueue.go()`.
+ 
+* 0.4.5 (2012-08-28) : `CollectingWorkingQueue.perform()` now accepts parameters for the job, just like `WorkingQueue.perform()`. Added `WorkingQueue.hold()` and `WorkingQueue.go()`. Fixed a bug wherein the (optional) job passed to `sequence()` was not scheduled.
 * 0.4.4 (2012-08-28) : wrote proper unit tests using mocha (`npm test` to launch them).
 * 0.4.3 (2012-05-03) : with the help of @penartur, fixed a problem where a single worker was launched after a `WorkingQueue.hold()` / `WorkingQueue.go()` sequence.
 * 0.4.2 (2012-03-16) : fixed a problem with `WorkingQueue.whenDone()`.
