@@ -197,5 +197,28 @@ describe('ConcurrentWorkingQueue', function(){
 
     });
 
+    it('should collect results when passed parameters', function(done) {
+        var queue = new capisce.CollectingWorkingQueue(2);
+        var repeat = 10;
+
+        function job(i, j, over) {
+            setTimeout(function() {
+                over(null, i*7+j);
+            }, Math.random() * 100);
+        }
+
+        for(var i=0; i<repeat; i++) {
+            queue.perform(job, i, 5);
+        }
+
+        queue.whenDone(function(result) {
+            assert.equal(repeat, result.length);
+            result.sort();
+            assert.equal(5, result[0][2]);
+            assert.equal((repeat-1)*7 + 5, result[repeat-1][2]);
+            done();
+        });
+
+    });
 });
 

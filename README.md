@@ -170,16 +170,50 @@ queue.perform(function(over) {
 });
 ```
 
-
 The CollectingWorkingQueue class
 --------------------------------
 
 This is just a wrapper around `WorkingQueue` that do the very common task of collecting result of each job. When using `CollectingWorkingQueue`, the over function takes the `err, result` of the job as parameters, and the `wellDone` handler receive the array of job results (as `[jobId, err, result]` sub-arrays). It is your choice to sort this array if you want to have results in the same orders the jobs where submitted.
 
+Note : before version 0.4.5, the sample below had a bug. 
+
 ```javascript
 var queue2 = new CollectingWorkingQueue(16);
 
 function myJob(name) {
+    return function(over) {
+        var duration = Math.floor(Math.random() * 1000);
+        console.log("Starting "+name+" for "+duration+"ms");
+        setTimeout(function() {
+            console.log(name + " over, duration="+duration+"ms");
+            over(null, "result-"+name);
+        }, duration);
+    };
+}
+
+var i;
+for(i=0;i<1000;i++) {
+    queue.perform(myJob("job-"+i));
+}
+queue.whenDone(function(results) {
+    console.log("All done !");
+
+    console.log("Before sorting : ")
+    console.log(results[0]);
+    console.log(results[999]);
+
+    results.sort()
+    console.log("After sorting : ")
+    console.log(results[0]);
+    console.log(results[999]);
+});
+```
+Since capisce 0.4.5, you can pass parameters to jobs,  just like you would do with a standard `WorkingQueue`. Once again, this saves you from using function builders (however there are closure built behind the scene).
+
+```javascript
+var queue2 = new CollectingWorkingQueue(16);
+
+function myJob(name, over) {
     var duration = Math.floor(Math.random() * 1000);
     console.log("Starting "+name+" for "+duration+"ms");
     setTimeout(function() {
@@ -206,6 +240,8 @@ queue.whenDone(function(results) {
 });
 ```
 
+Also since capisce 0.4.5, you can call `CollectingWorkingQueue.hold()` and `CollectingWorkingQueue.go()` just like with `WorkingQueue`.
+
 Higher order constructs : sequence, concurrently, and then
 ----------------------------------------------------------
 
@@ -214,12 +250,13 @@ capisce exports the sequence and concurrently function, as well as the then meth
 Change Log
 ----------
 
+* 0.4.5 (2012-08-28) : `CollectingWorkingQueue.perform()` now accepts parameters for the job, just like `WorkingQueue.perform()`. Added `WorkingQueue.hold()` and `WorkingQueue.go()`.
 * 0.4.4 (2012-08-28) : wrote proper unit tests using mocha (`npm test` to launch them).
-* 0.4.3 (2012-05-03) : with the help of @penartur, fixed a problem where a single worker was launched after a `hold()` / `go()` sequence.
-* 0.4.2 (2012-03-16) : fixed a problem with `whenDone()`.
-* 0.4.1 (2012-03-15) : clarified behavior of `whenDone()` and added `doneAddingJobs()`
-* 0.4.0 (2012-02-15) : `perform()` now accepts extra parameters that are passed to the job when it is scheduled.
-* 0.3.1 (2012-02-12) : new behavior for `whenDone()`, not so satisfying.
-* 0.3.0 (2012-02-10) : Added the `wait()` method.
-* 0.2.0 (2012-02-10) : Added `hold()` and `go()` methods.
+* 0.4.3 (2012-05-03) : with the help of @penartur, fixed a problem where a single worker was launched after a `WorkingQueue.hold()` / `WorkingQueue.go()` sequence.
+* 0.4.2 (2012-03-16) : fixed a problem with `WorkingQueue.whenDone()`.
+* 0.4.1 (2012-03-15) : clarified behavior of `WorkingQueue.whenDone()` and added `WorkingQueue.doneAddingJobs()`
+* 0.4.0 (2012-02-15) : `WorkingQueue.perform()` now accepts extra parameters that are passed to the job when it is scheduled.
+* 0.3.1 (2012-02-12) : new behavior for `WorkingQueue.whenDone()`, not so satisfying.
+* 0.3.0 (2012-02-10) : Added the `WorkingQueue.wait()` method.
+* 0.2.0 (2012-02-10) : Added `WorkingQueue.hold()` and `WorkingQueue.go()` methods.
 * 0.1.0 (2012-02-09) : Initial version.
