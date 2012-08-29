@@ -19,7 +19,8 @@
       "mocha": ""
   },
   "scripts": {
-    "test": "mocha -R list -s 1000 -t 5000"
+    "test": "mocha -R list -s 1000 -t 5000",
+    "lint": "jshint --config jshint-config.json --show-non-errors lib test"
   },
   "optionalDependencies": {}
 }

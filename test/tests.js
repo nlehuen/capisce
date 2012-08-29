@@ -1,5 +1,8 @@
 "use strict";
 
+// Make jshint happy
+/*global describe:false, it:false */
+
 var capisce = require('../lib/capisce.js');
 var assert = require("assert");
 
