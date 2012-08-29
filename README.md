@@ -1,3 +1,4 @@
++[![build status](https://secure.travis-ci.org/nlehuen/capisce.png)](http://travis-ci.org/nlehuen/capisce)
 capisce
 =======
 
