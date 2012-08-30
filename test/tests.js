@@ -118,25 +118,32 @@ describe('WorkingQueue', function(){
   it('runs jobs in sequence when concurrency==1', function(done) {
 
         var start = new Date().getTime();
-        var result = 0;
+        var result = [];
         var repeat = 8;
         var queue = new capisce.WorkingQueue(1);
+        var workers = 0;
 
-        function job(over) {
+        function job(i, over) {
+            workers++;
+            assert.equal(1, workers, "more than one worker in a sequence");
+
             setTimeout(function() {
-                result++;
+                assert.equal(1, workers, "more than one worker in a sequence");
+                result.push(i);
+                workers--;
                 over();
-            }, LAPSE);
+            }, Math.random() * LAPSE);
         }
 
         for(var i=0; i<repeat; i++) {
-            queue.perform(job);
+            queue.perform(job, i);
         }
 
         queue.whenDone(function() {
             var end = new Date().getTime();
-            assert.equal(repeat, result);
-            assert.ok(end - start >= repeat * LAPSE, "jobs are not serialized");
+            for(var i = 0; i<repeat; i++) {
+                assert.equal(i, result[i], "sequence was not executed in order");    
+            }
             done();
         });
 
@@ -147,13 +154,24 @@ describe('WorkingQueue', function(){
         var start = new Date().getTime();
         var result = 0;
         var repeat = 8;
-        var queue = new capisce.WorkingQueue(2);
+        var concurrency = 4;
+        var queue = new capisce.WorkingQueue(concurrency);
+        var workers = 0;
+        var concurrent = false;
 
         function job(over) {
+            workers++;
+            assert.ok(workers<=concurrency, "concurrency level is not respected");
+            if(workers > 1) {
+                concurrent = true;
+            }
+
             setTimeout(function() {
+                assert.ok(workers<=concurrency, "concurrency level is not respected");
+                workers--;
                 result++;
                 over();
-            }, LAPSE);
+            }, Math.random() * LAPSE);
         }
 
         for(var i=0; i<repeat; i++) {
@@ -162,9 +180,8 @@ describe('WorkingQueue', function(){
 
         queue.whenDone(function() {
             var end = new Date().getTime();
-            assert.equal(repeat, result);
-            assert.ok(end - start > repeat * LAPSE / 2, "concurrency level is not respected");
-            assert.ok(end - start < repeat * LAPSE, "jobs should not be serialized");
+            assert.equal(repeat, result, "not all jobs have run");
+            assert.ok(concurrent, "no concurrency was observed")
             done();
         });
 
