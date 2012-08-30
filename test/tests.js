@@ -117,7 +117,6 @@ describe('WorkingQueue', function(){
 
   it('runs jobs in sequence when concurrency==1', function(done) {
 
-        var start = new Date().getTime();
         var result = [];
         var repeat = 8;
         var queue = new capisce.WorkingQueue(1);
@@ -140,9 +139,8 @@ describe('WorkingQueue', function(){
         }
 
         queue.whenDone(function() {
-            var end = new Date().getTime();
             for(var i = 0; i<repeat; i++) {
-                assert.equal(i, result[i], "sequence was not executed in order");    
+                assert.equal(i, result[i], "sequence was not executed in order");
             }
             done();
         });
@@ -151,7 +149,6 @@ describe('WorkingQueue', function(){
 
   it('runs jobs in parallel when concurrency>1', function(done) {
 
-        var start = new Date().getTime();
         var result = 0;
         var repeat = 8;
         var concurrency = 4;
@@ -179,9 +176,8 @@ describe('WorkingQueue', function(){
         }
 
         queue.whenDone(function() {
-            var end = new Date().getTime();
             assert.equal(repeat, result, "not all jobs have run");
-            assert.ok(concurrent, "no concurrency was observed")
+            assert.ok(concurrent, "no concurrency was observed");
             done();
         });
 
