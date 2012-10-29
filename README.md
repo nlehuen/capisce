@@ -79,17 +79,17 @@ var queue = new WorkingQueue(16);
 var result = 0;
 var list = [1, 1, 2, 3, 5, 8, 13];
 
-function adder(index, element, over) {
+function adder(index, element, k, over) {
     if(index % 2 == 0) {
-        result += element;
+        result += element + k;
     }
     over();
 }
 
-queue.processList(adder, list);
+queue.processList(adder, list, 5);
 
 queue.onceDone(function() {
-    assert.equal(21, result);
+    assert.equal((1 + 5) + (2 + 5) + (5 + 5) + (13 + 5), result);
     done();
 });
 ```
@@ -102,22 +102,22 @@ function Mean() {
     var total = 0.0;
     var count = 0;
 
-    this.process = function(key, value, over) {
-        total += value;
+    this.process = function(key, value, f, over) {
+        total += value + f(value);
         count += 1;
         over();
-    }
+    };
 
     this.result = function() {
         return total / count;
-    }
+    };
 }
 
 var mean = new Mean();
-queue.processObject(mean.process, list);
+queue.processObject(mean.process, list, function(value) { return value + 5; });
 
 queue.onceDone(function() {
-    assert.equal(11.25, mean.result());
+    assert.equal(((30 + 30 + 5) + (3 + 3 + 5) + (0.75 + 0.75 + 5)) / 3, mean.result());
     done();
 });
 ```
