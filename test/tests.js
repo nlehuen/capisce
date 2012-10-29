@@ -63,7 +63,55 @@ describe('WorkingQueue', function(){
         });
     });
 
-  it('triggers onceDone when doneAddingJobs is called', function(done) {
+    it('processes lists', function(done){
+        var queue = new capisce.WorkingQueue(16);
+        var result = 0;
+        var list = [1, 1, 2, 3, 5, 8, 13];
+
+        function adder(index, element, over) {
+            if(index % 2 == 0) {
+                result += element;
+            }
+            over();
+        }
+
+        queue.processList(adder, list);
+
+        queue.onceDone(function() {
+            assert.equal(21, result);
+            done();
+        });
+    });
+
+    it('processes objects', function(done){
+        var queue = new capisce.WorkingQueue(16);
+        var list = {'Nicolas':30, 'Loïc':3, 'Lachlan':0.75};
+
+        function Mean() {
+            var total = 0.0;
+            var count = 0;
+
+            this.process = function(key, value, over) {
+                total += value;
+                count += 1;
+                over();
+            }
+
+            this.result = function() {
+                return total / count;
+            }
+        }
+
+        var mean = new Mean();
+        queue.processObject(mean.process, list);
+
+        queue.onceDone(function() {
+            assert.equal(11.25, mean.result());
+            done();
+        });
+    });
+
+    it('triggers onceDone when doneAddingJobs is called', function(done) {
 
         var queue = new capisce.WorkingQueue(1);
         var waited = 0;
@@ -77,7 +125,7 @@ describe('WorkingQueue', function(){
             waited = 1;
             queue.doneAddingJobs();
         }, LAPSE);
-  });
+    });
 
   it('does not trigger onceDone twice when doneAddingJobs is called after adding a job', function(done) {
 

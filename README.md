@@ -53,9 +53,9 @@ Of course you can name the over function any way you want. Other similar librari
 
 ### Passing parameters to jobs
 
-Before 0.4.0, jobs where function that could only take one parameter, the `over()` function. This forced any job parameters to be passed through the closure mechanism, which may have undesirable memory or performance downsides.
+Before capisce 0.4.0, jobs where function that could only take one parameter, the `over()` function. This forced any job parameters to be passed through the closure mechanism, which may have undesirable memory or performance downsides.
 
-From 0.4.0, you can pass additional arguments to the `perform()` call and they will be passed right along to your job, before the over function. Internally the data stored in the queue is `[job, arg1, arg2...]` so no surprises regarding memory usage.
+From capisce 0.4.0, you can pass additional arguments to the `perform()` call and they will be passed right along to your job, before the over function. Internally the data stored in the queue is `[job, arg1, arg2...]` so no surprises regarding memory usage.
 
 Here is a sample of parameter passing :
 
@@ -68,6 +68,58 @@ function myJob(word1, word2, over) {
 
 queue.perform(myJob, 'Hello', 'world');
 queue.perform(myJob, 'Howdy', 'pardner');
+```
+
+### Processing collections
+
+As a shortcut, from capisce 0.6.0, you can process all elements in collections using `processList` and `processObject` :
+
+```javascript
+var queue = new WorkingQueue(16);
+var result = 0;
+var list = [1, 1, 2, 3, 5, 8, 13];
+
+function adder(index, element, over) {
+    if(index % 2 == 0) {
+        result += element;
+    }
+    over();
+}
+
+queue.processList(adder, list);
+
+queue.onceDone(function() {
+    assert.equal(21, result);
+    done();
+});
+```
+
+```javascript
+var queue = new WorkingQueue(16);
+var list = {'Nicolas':30, 'Loïc':3, 'Lachlan':0.75};
+
+function Mean() {
+    var total = 0.0;
+    var count = 0;
+
+    this.process = function(key, value, over) {
+        total += value;
+        count += 1;
+        over();
+    }
+
+    this.result = function() {
+        return total / count;
+    }
+}
+
+var mean = new Mean();
+queue.processObject(mean.process, list);
+
+queue.onceDone(function() {
+    assert.equal(11.25, mean.result());
+    done();
+});
 ```
 
 ### Waiting for all jobs to be over
@@ -275,6 +327,7 @@ For now, `then()` doesn't accept job parameters like `perform()`. This is due to
 Change Log
 ----------
 
+* 0.6.0 (2012-10-29) : Added `processList` and `processDictionary`.
 * 0.5.0 (2012-10-29) : `whenDone` is deprecated, use `onceDone` instead. `onceDone` callbacks are called only once.
 * 0.4.5 (2012-08-28) : `CollectingWorkingQueue.perform()` now accepts parameters for the job, just like `WorkingQueue.perform()`. Added `WorkingQueue.hold()` and `WorkingQueue.go()`. Fixed a bug wherein the (optional) job passed to `sequence()` was not scheduled.
 * 0.4.4 (2012-08-28) : wrote proper unit tests using mocha (`npm test` to launch them).
