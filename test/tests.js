@@ -69,7 +69,7 @@ describe('WorkingQueue', function(){
         var list = [1, 1, 2, 3, 5, 8, 13];
 
         function adder(index, element, over) {
-            if(index % 2 == 0) {
+            if(index % 2 === 0) {
                 result += element;
             }
             over();
@@ -95,11 +95,11 @@ describe('WorkingQueue', function(){
                 total += value;
                 count += 1;
                 over();
-            }
+            };
 
             this.result = function() {
                 return total / count;
-            }
+            };
         }
 
         var mean = new Mean();
