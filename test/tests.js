@@ -21,6 +21,24 @@ describe('WorkingQueue', function(){
             }, LAPSE);
         });
 
+        queue.onceDone(function() {
+            assert.equal(1, result);
+            done();
+        });
+    });
+
+    it('supports whenDone even though it is deprecated', function(done){
+
+        var queue = new capisce.WorkingQueue(1);
+        var result = 0;
+
+        queue.perform(function(over) {
+            setTimeout(function() {
+                result = 1;
+                over();
+            }, LAPSE);
+        });
+
         queue.whenDone(function() {
             assert.equal(1, result);
             done();
@@ -39,18 +57,18 @@ describe('WorkingQueue', function(){
             }, LAPSE);
         }, 41, 1);
 
-        queue.whenDone(function() {
+        queue.onceDone(function() {
             assert.equal(42, result);
             done();
         });
     });
 
-  it('triggers whenDone when doneAddingJobs is called', function(done) {
-        
+  it('triggers onceDone when doneAddingJobs is called', function(done) {
+
         var queue = new capisce.WorkingQueue(1);
         var waited = 0;
 
-        queue.whenDone(function() {
+        queue.onceDone(function() {
             assert.equal(1, waited);
             done();
         });
@@ -61,8 +79,8 @@ describe('WorkingQueue', function(){
         }, LAPSE);
   });
 
-  it('does not trigger whenDone twice when doneAddingJobs is called after adding a job', function(done) {
-        
+  it('does not trigger onceDone twice when doneAddingJobs is called after adding a job', function(done) {
+
         var queue = new capisce.WorkingQueue(1);
         var waited = 0;
 
@@ -71,7 +89,7 @@ describe('WorkingQueue', function(){
             over();
         });
 
-        queue.whenDone(function() {
+        queue.onceDone(function() {
             assert.equal(1, waited);
             setTimeout(function() {
                 done();
@@ -82,6 +100,60 @@ describe('WorkingQueue', function(){
             waited = 2;
             queue.doneAddingJobs();
         }, LAPSE);
+  });
+
+  it('calls onceDone callbacks only once', function(done) {
+        var result = 0;
+        var queue = new capisce.WorkingQueue(1);
+
+        queue.onceDone(function() {
+            assert.equal(0, result);
+            result += 1;
+        });
+
+        queue.perform(function(over) {
+            assert.equal(0, result);
+            over();
+        });
+
+        queue.onceDone(function() {
+            queue.perform(function(over) {
+                assert.equal(1, result);
+                over();
+            });
+
+            queue.onceDone(function() {
+                assert.equal(1, result);
+                done();
+            });
+        });
+  });
+
+  it('supports re-registering onceDone callbacks', function(done) {
+        var result = 0;
+        var queue = new capisce.WorkingQueue(1);
+
+        queue.onceDone(function incr() {
+            result += 1;
+            queue.onceDone(incr);
+        });
+
+        queue.perform(function(over) {
+            assert.equal(0, result);
+            over();
+        });
+
+        queue.onceDone(function() {
+            queue.perform(function(over) {
+                assert.equal(1, result);
+                over();
+            });
+
+            queue.onceDone(function() {
+                assert.equal(2, result);
+                done();
+            });
+        });
   });
 
   it('holds when asked to', function(done) {
@@ -108,7 +180,7 @@ describe('WorkingQueue', function(){
             }, LAPSE);
         }, LAPSE);
 
-        queue.whenDone(function() {
+        queue.onceDone(function() {
             assert.equal(1, result);
             assert.equal(0, isDone);
             isDone = 1;
@@ -138,7 +210,7 @@ describe('WorkingQueue', function(){
             queue.perform(job, i);
         }
 
-        queue.whenDone(function() {
+        queue.onceDone(function() {
             for(var i = 0; i<repeat; i++) {
                 assert.equal(i, result[i], "sequence was not executed in order");
             }
@@ -175,7 +247,7 @@ describe('WorkingQueue', function(){
             queue.perform(job);
         }
 
-        queue.whenDone(function() {
+        queue.onceDone(function() {
             assert.equal(repeat, result, "not all jobs have run");
             assert.ok(concurrent, "no concurrency was observed");
             done();
@@ -194,7 +266,7 @@ describe('WorkingQueue', function(){
             result += 3;
             over();
             assert.equal(5, result);
-        }).whenDone(function() {
+        }).onceDone(function() {
             assert.equal(5, result);
             done();
         });
@@ -211,7 +283,7 @@ describe('WorkingQueue', function(){
             result += 3;
             over();
             assert.equal(5, result);
-        }).whenDone(function() {
+        }).onceDone(function() {
             assert.equal(5, result);
             done();
         });
@@ -230,13 +302,13 @@ describe('WorkingQueue', function(){
                 over();
                 assert.equal(8, result);
             }, LAPSE);
-        }).whenDone(function() {
+        }).onceDone(function() {
             assert.equal(8, result);
             done();
         });
   });
 
-  it('supports enqueuing jobs with other.then', function(done) {
+  it('supports enqueuing jobs with over.then', function(done) {
         var result = 0;
 
         capisce.sequence().perform(function(over) {
@@ -246,7 +318,7 @@ describe('WorkingQueue', function(){
                 over();
             });
             assert.equal(2, result);
-        }).whenDone(function() {
+        }).onceDone(function() {
             assert.equal(5, result);
             done();
         });
@@ -255,7 +327,7 @@ describe('WorkingQueue', function(){
 });
 
 describe('ConcurrentWorkingQueue', function(){
-    
+
     it('collects results', function(done) {
         var queue = new capisce.CollectingWorkingQueue(2);
         var repeat = 10;
@@ -272,7 +344,7 @@ describe('ConcurrentWorkingQueue', function(){
             queue.perform(job(i));
         }
 
-        queue.whenDone(function(result) {
+        queue.onceDone(function(result) {
             assert.equal(repeat, result.length);
             result.sort();
             assert.equal(0, result[0][2]);
@@ -296,7 +368,7 @@ describe('ConcurrentWorkingQueue', function(){
             queue.perform(job, i, 5);
         }
 
-        queue.whenDone(function(result) {
+        queue.onceDone(function(result) {
             assert.equal(repeat, result.length);
             result.sort();
             assert.equal(5, result[0][2]);

@@ -72,7 +72,7 @@ queue.perform(myJob, 'Howdy', 'pardner');
 
 ### Waiting for all jobs to be over
 
-When queuing a bunch of jobs, it is often required to wait for all jobs to complete before continuing a process. For that you use the `whenDone()` method :
+When queuing a bunch of jobs, it is often required to wait for all jobs to complete before continuing a process. For that you use the `onceDone()` method :
 
 ```javascript
 function myJob(name, over) {
@@ -88,18 +88,18 @@ var i;
 for(i=0;i<1000;i++) {
     queue.perform(myJob, "job-"+i);
 }
-queue.whenDone(function() {
+queue.onceDone(function() {
     console.log("All done !");
 });
 ```
 
-The `whenDone()` method can be called multiple times to register multiple handlers, and the handlers will be called in the same order they were added. Maybe I should have used the `EventEmitter` pattern for this.
+The `onceDone()` method can be called multiple times to register multiple handlers, and the handlers will be called in the same order they were added. Maybe I should have used the `EventEmitter` pattern for this.
 
-From 0.4.1 the situation when `whenDone` callbacks are called is more precise.
+From 0.4.1 the situation when `onceDone` callbacks are called is more precise.
 
-The `whenDone` callbacks will be called :
+The `onceDone` callbacks will be called :
 - when the last job from the queue is over
-- when you call `doneAddingJobs()` and no job was performed since the last `whenDone` situation
+- when you call `doneAddingJobs()` and no job was performed since the last `onceDone` situation
 
 This is required to handle the case when a queue may or may not receive jobs, and you want cleanup callbacks to be called in both situations. In this case you would do :
 
@@ -118,16 +118,18 @@ var i;
 for(i=0;i<Math.random(10);i++) {
     queue.perform(myJob, "job-"+i);
 }
-queue.whenDone(function() {
+queue.onceDone(function() {
     console.log("All done with "+i+" jobs !");
 });
 
 // This does nothing if jobs where added to the queue
-// If no jobs where added, the whenDone callbacks are called
+// If no jobs where added, the onceDone callbacks are called
 queue.doneAddingJobs();
 ```
 
-Calling `doneAddingJobs()` is not mandatory : it's just needed if you want to make sure the `whenDone` callbacks are called even if no job was effectively done.
+Calling `doneAddingJobs()` is not mandatory : it's just needed if you want to make sure the `onceDone` callbacks are called even if no job was effectively done.
+
+As the name implies, `onceDone` callbacks are called only once, and forgotten immediatly after. This is an important change in capisce 0.5.0 ; previously those callbacks where kept and repeatedly called whenever the done situation was encountered. This created a lot of opportunities for memory leaks. If you want to reproduce the same behaviour as before, re-register your callback using `onceDone` from within your callback, capisce supports that.
 
 ### Holding and resuming jobs execution
 
@@ -176,7 +178,7 @@ The CollectingWorkingQueue class
 
 This is just a wrapper around `WorkingQueue` that do the very common task of collecting result of each job. When using `CollectingWorkingQueue`, the over function takes the `err, result` of the job as parameters, and the `wellDone` handler receive the array of job results (as `[jobId, err, result]` sub-arrays). It is your choice to sort this array if you want to have results in the same orders the jobs where submitted.
 
-Note : before version 0.4.5, the sample below had a bug. 
+Note : before version 0.4.5, the sample below had a bug.
 
 ```javascript
 var queue2 = new CollectingWorkingQueue(16);
@@ -196,7 +198,7 @@ var i;
 for(i=0;i<1000;i++) {
     queue.perform(myJob("job-"+i));
 }
-queue.whenDone(function(results) {
+queue.onceDone(function(results) {
     console.log("All done !");
 
     console.log("Before sorting : ")
@@ -227,7 +229,7 @@ var i;
 for(i=0;i<1000;i++) {
     queue.perform(myJob, "job-"+i);
 }
-queue.whenDone(function(results) {
+queue.onceDone(function(results) {
     console.log("All done !");
 
     console.log("Before sorting : ")
@@ -272,7 +274,8 @@ For now, `then()` doesn't accept job parameters like `perform()`. This is due to
 
 Change Log
 ----------
- 
+
+* 0.5.0 (2012-10-29) : `whenDone` is deprecated, use `onceDone` instead. `onceDone` callbacks are called only once.
 * 0.4.5 (2012-08-28) : `CollectingWorkingQueue.perform()` now accepts parameters for the job, just like `WorkingQueue.perform()`. Added `WorkingQueue.hold()` and `WorkingQueue.go()`. Fixed a bug wherein the (optional) job passed to `sequence()` was not scheduled.
 * 0.4.4 (2012-08-28) : wrote proper unit tests using mocha (`npm test` to launch them).
 * 0.4.3 (2012-05-03) : with the help of @penartur, fixed a problem where a single worker was launched after a `WorkingQueue.hold()` / `WorkingQueue.go()` sequence.
