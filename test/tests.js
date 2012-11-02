@@ -83,7 +83,42 @@ describe('WorkingQueue', function(){
         });
     });
 
-    it('processes objects', function(done){
+    it('processes empty list (1)', function(done){
+        var queue = new capisce.WorkingQueue(16);
+        var onceDoneRan = 0;
+
+        function adder(index, element, k, over) {
+            throw new Error("Should never be called");
+        }
+
+        queue.onceDone(function() {
+            assert.equal(0, onceDoneRan++);
+            done();
+        });
+
+        queue.processList(adder, [], 5);
+
+        queue.doneAddingJobs();
+    });
+
+    it('processes empty list (2)', function(done){
+        var queue = new capisce.WorkingQueue(16);
+        var onceDoneRan = 0;
+
+        function adder(index, element, k, over) {
+            throw new Error("Should never be called");
+        }
+
+        queue.processList(adder, [], 5);
+
+        queue.onceDone(function() {
+            assert.equal(0, onceDoneRan++);
+            done();
+        });
+
+        queue.doneAddingJobs();
+    });
+        it('processes objects', function(done){
         var queue = new capisce.WorkingQueue(16);
         var list = {'Nicolas':30, 'Loïc':3, 'Lachlan':0.75};
 

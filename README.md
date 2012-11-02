@@ -327,6 +327,8 @@ For now, `then()` doesn't accept job parameters like `perform()`. This is due to
 Change Log
 ----------
 
+* 0.6.2 (2012-11-02) : Fixed a bug that broke `onceDone` semantics when calling `processList` or `processObject` on empty lists / objects.
+* 0.6.1 (2012-10-29) : `processList` and `processDictionary` support extra callback arguments.
 * 0.6.0 (2012-10-29) : Added `processList` and `processDictionary`.
 * 0.5.0 (2012-10-29) : `whenDone` is deprecated, use `onceDone` instead. `onceDone` callbacks are called only once.
 * 0.4.5 (2012-08-28) : `CollectingWorkingQueue.perform()` now accepts parameters for the job, just like `WorkingQueue.perform()`. Added `WorkingQueue.hold()` and `WorkingQueue.go()`. Fixed a bug wherein the (optional) job passed to `sequence()` was not scheduled.
