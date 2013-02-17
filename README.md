@@ -6,6 +6,17 @@ This module implements an asynchronous job queueing system with the `WorkingQueu
 
 The basic use case of this module is when you want to perform a bunch (hundreds or thousands) of I/O related tasks, for instance HTTP requests. In order to play nice with others and make sure the I/O stack (file descriptors, TCP/IP stack etc.) won't be submerged by thousands of concurrent requests, you have to put an artificial limit on the requests that are launched concurrently. When this limit is reached, jobs have to be queued until some other job is finished. And that's exactly what `WorkingQueue` is for !
 
+Installing capisce
+------------------
+
+`capisce` is published as a npm module, so all you have to do to use the latest official release of npm is :
+
+```
+npm install capisce
+```
+
+Or list `capisce` as a dependency in your `package.json` file and let npm perform its magic.
+
 The WorkingQueue class
 ----------------------
 
